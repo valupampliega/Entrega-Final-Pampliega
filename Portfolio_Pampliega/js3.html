@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Tareas</title>
+  <link rel="stylesheet" href="estilos.css" />
+</head>
+<body>
+  <div class="volver">
+    <a href="index.html">Volver al inicio</a>
+  </div>
+
+  <div class="centrado">
+    <div class="app">
+      <h1>Lista de Tareas</h1>
+      <div class="input-container">
+        <input type="text" id="nuevaTarea" placeholder="Añade una nueva tarea..." />
+        <button id="agregar">Agregar</button>
+      </div>
+      <ul class="lista-tareas" id="listaTareas">
+        <li class="cargando">Cargando tareas...</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputTarea = document.getElementById('nuevaTarea');
+      const btnAgregar = document.getElementById('agregar');
+      const listaTareas = document.getElementById('listaTareas');
+      let db;
+      const DB_NAME = 'TareasDB';
+      const STORE_NAME = 'tareas';
+
+      const request = indexedDB.open(DB_NAME, 1);
+
+      request.onerror = e => {
+        listaTareas.innerHTML = '<li>Error al cargar las tareas.</li>';
+      };
+
+      request.onsuccess = e => {
+        db = e.target.result;
+        cargarTareas();
+      };
+
+      request.onupgradeneeded = e => {
+        const db = e.target.result;
+        const store = db.createObjectStore(STORE_NAME, {
+          keyPath: 'id',
+          autoIncrement: true
+        });
+        store.createIndex('texto', 'texto', { unique: false });
+        store.createIndex('completada', 'completada', { unique: false });
+      };
+
+      btnAgregar.addEventListener('click', agregarTarea);
+      inputTarea.addEventListener('keypress', e => {
+        if (e.key === 'Enter') agregarTarea();
+      });
+
+      function agregarTarea() {
+        const texto = inputTarea.value.trim();
+        if (!texto) return;
+        const tarea = { texto, completada: false, fecha: new Date() };
+        const tx = db.transaction([STORE_NAME], 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.add(tarea).onsuccess = () => {
+          inputTarea.value = '';
+          cargarTareas();
+        };
+      }
+
+      function cargarTareas() {
+        const tx = db.transaction([STORE_NAME], 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        store.getAll().onsuccess = e => {
+          renderTareas(e.target.result);
+        };
+      }
+
+      function renderTareas(tareas) {
+        listaTareas.innerHTML = '';
+        if (tareas.length === 0) {
+          listaTareas.innerHTML = '<li>No hay tareas.</li>';
+          return;
+        }
+        tareas.sort((a, b) => b.fecha - a.fecha);
+        tareas.forEach(tarea => {
+          const li = document.createElement('li');
+          li.className = `tarea ${tarea.completada ? 'completada' : ''}`;
+          li.dataset.id = tarea.id;
+          li.innerHTML = `
+            <span>${tarea.texto}</span>
+            <div class="acciones">
+              <button onclick="toggle(${tarea.id})">${tarea.completada ? '❌' : '✓'}</button>
+              <button class="editar" onclick="editar(${tarea.id})">✏️</button>
+              <button class="guardar" onclick="guardar(${tarea.id})">💾</button>
+              <button class="eliminar" onclick="eliminar(${tarea.id})">🗑️</button>
+            </div>`;
+          listaTareas.appendChild(li);
+        });
+      }
+
+      window.toggle = id => {
+        const tx = db.transaction([STORE_NAME], 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.get(id).onsuccess = e => {
+          const tarea = e.target.result;
+          tarea.completada = !tarea.completada;
+          store.put(tarea).onsuccess = cargarTareas;
+        };
+      };
+
+      window.editar = id => {
+        const li = document.querySelector(`li[data-id="${id}"]`);
+        const texto = li.querySelector('span').textContent;
+        const input = document.createElement('input');
+        input.className = 'edit-input';
+        input.value = texto;
+        li.querySelector('span').replaceWith(input);
+        li.querySelector('.editar').style.display = 'none';
+        li.querySelector('.guardar').style.display = 'inline-block';
+        input.focus();
+        input.addEventListener('keypress', e => {
+          if (e.key === 'Enter') guardar(id);
+        });
+      };
+
+      window.guardar = id => {
+        const li = document.querySelector(`li[data-id="${id}"]`);
+        const nuevoTexto = li.querySelector('.edit-input').value.trim();
+        if (!nuevoTexto) return eliminar(id);
+        const tx = db.transaction([STORE_NAME], 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.get(id).onsuccess = e => {
+          const tarea = e.target.result;
+          tarea.texto = nuevoTexto;
+          tarea.fecha = new Date();
+          store.put(tarea).onsuccess = cargarTareas;
+        };
+      };
+
+      window.eliminar = id => {
+        const tx = db.transaction([STORE_NAME], 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.delete(id).onsuccess = cargarTareas;
+      };
+    });
+  </script>
+</body>
+</html>

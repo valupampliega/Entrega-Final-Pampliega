@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio - Valentina Pampliega</title>
+  <link rel="stylesheet" href="estilos.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <header>
+    <div class="contenedor-header">
+      <h1>Valentina Pampliega</h1>
+      <nav>
+        <ul>
+          <li><a href="https://valepamp.github.io/linktree" target="_blank">Linktree</a></li>
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#proyectos">Proyectos</a></li>
+          <li><a href="#sobre-mi">Sobre mí</a></li>
+          <li><a href="#habilidades">Habilidades</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="inicio" class="bienvenida fondo-dinamico fade-in"></section>
+
+    <section id="proyectos" class="proyectos fade-in">
+      <h2>Proyectos Destacados</h2>
+      <div class="grid-proyectos">
+        <a href="js1.html" class="card">
+          <h3>Galería interactiva</h3>
+          <p>Visualización de imágenes en modal con JS.</p>
+        </a>
+        <a href="js2.html" class="card">
+          <h3>Calculadora</h3>
+          <p>Calculadora con operaciones básicas.</p>
+        </a>
+        <a href="js3.html" class="card">
+          <h3>Lista de tareas</h3>
+          <p>Gestión de tareas con guardado en localStorage.</p>
+        </a>
+      </div>
+    </section>
+
+    <section id="sobre-mi" class="sobre-mi fade-in">
+      <h2>Sobre mí</h2>
+      <div class="sobre-mi-contenido">
+        <img src="imagenes/valentina.jpg" alt="Valentina" class="foto-sobre-mi" />
+        <div>
+          <p>Soy estudiante de Diseño y Desarrollo Web. Me apasiona crear sitios modernos, accesibles y bien estructurados. Mi enfoque combina diseño visual con funcionalidad técnica.</p>
+          <p>Estoy en constante aprendizaje y busco perfeccionar mi trabajo en cada proyecto.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="habilidades" class="habilidades fade-in">
+      <h2>Habilidades</h2>
+      <ul>
+        <li><strong>HTML5:</strong> Maquetado semántico y accesible</li>
+        <li><strong>CSS3:</strong> Flexbox, Grid, animaciones</li>
+        <li><strong>JavaScript:</strong> DOM, eventos, lógica funcional</li>
+        <li><strong>Responsive Design:</strong> Mobile-first</li>
+        <li><strong>Git & GitHub:</strong> Versionado y despliegue</li>
+      </ul>
+      <h3>Educación</h3>
+      <p>Estudiante de Diseño y Desarrollo Web - Año 2025</p>
+    </section>
+
+    <section id="contacto" class="contacto fade-in">
+    <h2>Contacto</h2>
+    <form id="formulario" onsubmit="return enviarEmail(event)">
+    <input type="text" name="name" placeholder="Nombre" required />
+    <input type="email" name="email" placeholder="Email" required />
+    <textarea name="message" placeholder="Mensaje" required></textarea>
+    <button type="submit">Enviar</button>
+    <p id="estado" style="margin-top: 1rem;"></p>
+    </form>
+    </section>
+
+  </main>
+
+  <footer>
+  <p>© 2025 Valentina Pampliega</p>
+  <div class="redes">
+    <a href="https://www.linkedin.com/in/valentina-pampliega-984597359" target="_blank">LinkedIn</a>
+  </div>
+</footer>
+
+
+  <script>
+    const faders = document.querySelectorAll('.fade-in');
+    const appearOptions = { threshold: 0.1 };
+    const appearOnScroll = new IntersectionObserver(function(entries, observer) {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('appear');
+        observer.unobserve(entry.target);
+      });
+    }, appearOptions);
+    faders.forEach(fader => appearOnScroll.observe(fader));
+  </script>
+
+
+  <script>
+    const imagenes = [
+      "imagenes/img1.jpg",
+      "imagenes/img2.jpg",
+      "imagenes/img3.jpg",
+      "imagenes/img4.jpg"
+    ];
+    let indice = 0;
+    const seccion = document.querySelector(".fondo-dinamico");
+
+    function cambiarFondo() {
+      seccion.style.backgroundImage = `url('${imagenes[indice]}')`;
+      indice = (indice + 1) % imagenes.length;
+    }
+
+    cambiarFondo();
+    setInterval(cambiarFondo, 4000);
+  </script>
+
+<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+<script>
+  
+  (function () {
+    emailjs.init("XlLX9pwyLhMIcFUmB"); 
+  })();
+
+  const formulario = document.getElementById("formulario-contacto");
+  const resultado = document.getElementById("resultado");
+
+  formulario.addEventListener("submit", function (e) {
+    e.preventDefault(); 
+
+    emailjs.sendForm("service_gk969mx", "template_dmux6k6", this)
+      .then(() => {
+        resultado.innerText = "Mensaje enviado correctamente.";
+        resultado.style.color = "green";
+        formulario.reset();
+      })
+      .catch((error) => {
+        resultado.innerText = "Hubo un error al enviar el mensaje.";
+        resultado.style.color = "red";
+        console.error("Error al enviar con EmailJS:", error);
+      });
+  });
+</script>
+
+</body>
+</html>

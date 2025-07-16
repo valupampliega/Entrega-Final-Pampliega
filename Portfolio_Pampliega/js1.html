@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Galería de Imágenes con Slider</title>
+  <link rel="stylesheet" href="estilos.css" />
+</head>
+<body class="galeria-body">
+
+  <div class="volver-wrapper">
+    <a class="boton" href="index.html">Volver al inicio</a>
+  </div>
+
+  <section class="galeria">
+    <img src="imagenes/img1.jpg" alt="Imagen 1" data-index="0" onclick="abrirLightbox(0)">
+    <img src="imagenes/img2.jpg" alt="Imagen 2" data-index="1" onclick="abrirLightbox(1)">
+    <img src="imagenes/img3.jpg" alt="Imagen 3" data-index="2" onclick="abrirLightbox(2)">
+    <img src="imagenes/img4.jpg" alt="Imagen 4" data-index="3" onclick="abrirLightbox(3)">
+  </section>
+
+  <div class="lightbox" id="lightbox">
+    <button class="cerrar" onclick="cerrarLightbox()">×</button>
+    <button class="prev" onclick="cambiarImagen(-1)">‹</button>
+    <img id="lightbox-img" src="" alt="Imagen ampliada" />
+    <button class="next" onclick="cambiarImagen(1)">›</button>
+  </div>
+
+  <script>
+    const imagenes = [
+      'imagenes/img1.jpg',
+      'imagenes/img2.jpg',
+      'imagenes/img3.jpg',
+      'imagenes/img4.jpg'
+    ];
+
+    let indiceActual = 0;
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+
+    function abrirLightbox(indice) {
+      indiceActual = indice;
+      lightbox.classList.add('active');
+      lightboxImg.src = imagenes[indiceActual];
+    }
+
+    function cerrarLightbox() {
+      lightbox.classList.remove('active');
+    }
+
+    function cambiarImagen(direccion) {
+      indiceActual += direccion;
+      if (indiceActual < 0) indiceActual = imagenes.length -1;
+      if (indiceActual >= imagenes.length) indiceActual = 0;
+      lightboxImg.src = imagenes[indiceActual];
+    }
+
+    document.addEventListener('keydown', e => {
+      if(e.key === "Escape" && lightbox.classList.contains('active')) {
+        cerrarLightbox();
+      }
+
+      if(e.key === "ArrowRight" && lightbox.classList.contains('active')) {
+        cambiarImagen(1);
+      }
+      if(e.key === "ArrowLeft" && lightbox.classList.contains('active')) {
+        cambiarImagen(-1);
+      }
+    });
+  </script>
+
+</body>
+</html>
